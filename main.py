@@ -74,6 +74,7 @@ if reuslt is None:
 
 while True:
     try:
+        check_and_download()
         now = dt.datetime.now()
         if now.hour < 18:
             time.sleep(1*60*60)
