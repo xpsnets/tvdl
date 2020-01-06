@@ -76,10 +76,7 @@ while True:
     try:
         check_and_download()
         now = dt.datetime.now()
-        if now.hour < 18:
-            time.sleep(1*60*60)
-        else:
-            time.sleep(30*60)
+        time.sleep(30*60)
     except :
         print("Unexpected error:", sys.exc_info()[0])
         time.sleep(30*60)
