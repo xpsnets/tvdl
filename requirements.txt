@@ -1,0 +1,4 @@
+config
+urllib3
+tinydb
+requests
