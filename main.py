@@ -9,7 +9,7 @@ import json
 import re
 from synopy.base import Connection
 from synopy.api import DownloadStationTask
-import config_test as config
+import config as config
 
 db = TinyDB(config.db_file)
 table = db.table('tv_table')
