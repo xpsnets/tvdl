@@ -48,7 +48,7 @@ def check_and_download():
                                 if tv_info is None:
                                     magnet = item.findtext('magnet')
                                     print('download '+tvname +' season:'+str(season)+' episode'+str(episode))
-                                    resp = dstask_api.create(uri=magnet,destination='Video/TV/'+tvname)
+                                    resp = dstask_api.create(uri=magnet,destination=config.synology_dest+tvname)
                                     if resp.payload['success'] == True:
                                         table.insert({'tvid':tvid,'tvname':tvname,'season':season,'episode':episode})
                                     else:

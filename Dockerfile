@@ -1,6 +1,6 @@
 FROM python:3.6-alpine
 
-MAINTAINER xpsnets <admin@xpsnets.com>
+MAINTAINER xpsnets <xpsnets@outlook.com>
 
 ADD ./synopy /app/synopy
 ADD ./main.py /app
