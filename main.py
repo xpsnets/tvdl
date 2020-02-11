@@ -13,8 +13,10 @@ import config as config
 
 db = TinyDB(config.db_file)
 table = db.table('tv_table')
-with open(config.movie_id_file) as movieid_data_file:
-    tvs = json.load(movieid_data_file)
+tvs = []
+def load_tvs_id():
+    with open(config.movie_id_file) as movieid_data_file:
+        tvs = json.load(movieid_data_file)
 
 # Set up a connection
 conn = Connection('http', config.synology_addr, port=config.synology_port)
@@ -62,6 +64,7 @@ def check_and_download():
 
 Init_Query = Query()
 reuslt = db.get(Init_Query.isInit == True)
+load_tvs_id()
 is_init = True
 if reuslt is None:
     print('not init')
@@ -74,6 +77,7 @@ if reuslt is None:
 
 while True:
     try:
+        load_tvs_id()
         check_and_download()
         now = dt.datetime.now()
         time.sleep(30*60)
