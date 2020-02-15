@@ -15,6 +15,7 @@ db = TinyDB(config.db_file)
 table = db.table('tv_table')
 tvs = []
 def load_tvs_id():
+    global tvs
     with open(config.movie_id_file) as movieid_data_file:
         tvs = json.load(movieid_data_file)
 
