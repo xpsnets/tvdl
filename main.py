@@ -50,12 +50,16 @@ def check_and_download():
                                 tv_info = table.get((TV_Query.tvid == tvid) & (TV_Query.season == season) & (TV_Query.episode == episode))
                                 if tv_info is None:
                                     magnet = item.findtext('magnet')
-                                    print('download '+tvname +' season:'+str(season)+' episode'+str(episode))
-                                    resp = dstask_api.create(uri=magnet,destination=config.synology_dest+tvname)
-                                    if resp.payload['success'] == True:
-                                        table.insert({'tvid':tvid,'tvname':tvname,'season':season,'episode':episode})
+                                    if magnet is not None:
+                                        print('download '+tvname +' season:'+str(season)+' episode'+str(episode))
+                                        resp = dstask_api.create(uri=magnet,destination=config.synology_dest+tvname)
+                                        if resp.payload['success'] == True:
+                                            table.insert({'tvid':tvid,'tvname':tvname,'season':season,'episode':episode})
+                                        else:
+                                            print('download '+tvname +' season:'+str(season)+' episode'+str(episode)+' faile')
                                     else:
-                                        print('download '+tvname +' season:'+str(season)+' episode'+str(episode)+' faile')
+                                        print(tvname +' season:'+str(season)+' episode'+str(episode)+'has no magnet link, skip.')
+                                        table.insert({'tvid':tvid,'tvname':tvname,'season':season,'episode':episode,'status':'skip'})
                 except:
                     print("Unexpected error:", sys.exc_info()[0])
                     continue
