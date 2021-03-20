@@ -1,15 +1,14 @@
 import sys
 import os
-from urllib.request import urlopen
+import urllib.request
 from tinydb import TinyDB, Query
-from xml.etree.ElementTree import parse
 import time
 import datetime as dt
 import json
 import re
 from synopy.base import Connection
 from synopy.api import DownloadStationTask
-import config as config
+import config_test as config
 
 db = TinyDB(config.db_file)
 table = db.table('tv_table')
@@ -27,65 +26,65 @@ conn.authenticate(config.synology_user, config.synology_pwd)
 # Create an instance of the DownloadStationInfo API
 dstask_api = DownloadStationTask(conn, version=3)
 
-def check_and_download():
-    for tv in tvs:
+def get_data(tv,page):
+    try:
+        tvid = tv["resourceid"]
+        tvname = tv["title"]
+        print('tvid:'+tvid+' name:'+tvname+' page:'+str(page))
+        url = 'https://eztv.re/api/get-torrents?limit=100&imdb_id='+tvid+'&page='+str(page)
+        req = urllib.request.Request(
+            url, 
+            data=None, 
+            headers={
+                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.47 Safari/537.36'
+            }
+        )
+        u = urllib.request.urlopen(req).read()
+        doc = json.loads(u)
+        check_and_download(tv, doc)
+        print(int(doc["torrents_count"]))
+        if(int(doc["torrents_count"]) > page * 100):
+            nextpage = page + 1
+            get_data(tv,nextpage)
+    except Exception as e:
+        print("Unexpected error:", e)
+
+def check_and_download(tv, doc):
+    tvid = tv["resourceid"]
+    tvname = tv["title"]
+    for item in doc["torrents"]:
         try:
-            tvid = tv["resourceid"]
-            tvname = tv["title"]
-            u = urlopen('http://rss.rrys.tv/rss/feed/'+tvid)
-            doc = parse(u)
-            for item in doc.iterfind('channel/item'):
-                try:
-                    title = item.findtext('title')
-                    format = tv["format"].upper()
-                    if title.upper().find(format) != -1:
-                        matchObj = re.search( r'S(..)E(..)', title)
-                        if matchObj:
-                            season = int(matchObj.group(1))
-                            episode = int(matchObj.group(2))
-                            if is_init == False:
-                                table.insert({'tvid':tvid,'tvname':tvname,'season':season,'episode':episode})
-                            else:
-                                TV_Query = Query()
-                                tv_info = table.get((TV_Query.tvid == tvid) & (TV_Query.season == season) & (TV_Query.episode == episode))
-                                if tv_info is None:
-                                    magnet = item.findtext('magnet')
-                                    if magnet is not None:
-                                        print('download '+tvname +' season:'+str(season)+' episode'+str(episode))
-                                        resp = dstask_api.create(uri=magnet,destination=config.synology_dest+tvname)
-                                        if resp.payload['success'] == True:
-                                            table.insert({'tvid':tvid,'tvname':tvname,'season':season,'episode':episode})
-                                        else:
-                                            print('download '+tvname +' season:'+str(season)+' episode'+str(episode)+' faile')
-                                    else:
-                                        print(tvname +' season:'+str(season)+' episode'+str(episode)+'has no magnet link, skip.')
-                                        table.insert({'tvid':tvid,'tvname':tvname,'season':season,'episode':episode,'status':'skip'})
-                except:
-                    print("Unexpected error:", sys.exc_info()[0])
-                    continue
-        except:
-            print("Unexpected error:", sys.exc_info()[0])
+            filename = item["filename"]
+            format = tv["format"].upper()
+            if filename.upper().find(format) != -1:
+                season = int(item["season"])
+                episode = int(item["episode"])
+                TV_Query = Query()
+                tv_info = table.get((TV_Query.tvid == tvid) & (TV_Query.season == season) & (TV_Query.episode == episode))
+                if tv_info is None:
+                    magnet = item["magnet_url"]
+                    if magnet is not None:
+                        print('download '+tvname +' season:'+str(season)+' episode'+str(episode))
+                        resp = dstask_api.create(uri=magnet,destination=config.synology_dest+tvname)
+                        if resp.payload['success'] == True:
+                            table.insert({'tvid':tvid,'tvname':tvname,'season':season,'episode':episode})
+                        else:
+                            print('download '+tvname +' season:'+str(season)+' episode'+str(episode)+' faile')
+                    else:
+                        print(tvname +' season:'+str(season)+' episode'+str(episode)+'has no magnet link, skip.')
+                        table.insert({'tvid':tvid,'tvname':tvname,'season':season,'episode':episode,'status':'skip'})
+        except Exception as e:
+            print("Unexpected error:", e)
             continue
 
-Init_Query = Query()
-reuslt = db.get(Init_Query.isInit == True)
 load_tvs_id()
-is_init = True
-if reuslt is None:
-    print('not init')
-    is_init = False
-    db.purge_table('tv_table')
-    check_and_download()
-    db.insert({'isInit':True})
-    is_init = True
-    print('init complate')
-
 while True:
     try:
         load_tvs_id()
-        check_and_download()
+        for tv in tvs:
+            get_data(tv,1)
         now = dt.datetime.now()
-        time.sleep(30*60)
-    except :
-        print("Unexpected error:", sys.exc_info()[0])
-        time.sleep(30*60)
+        time.sleep(60*60)
+    except Exception as e:
+        print("Unexpected error:", e)
+        time.sleep(60*60)
