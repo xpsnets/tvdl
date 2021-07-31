@@ -6,9 +6,8 @@ import time
 import datetime as dt
 import json
 import re
-from synopy.base import Connection
-from synopy.api import DownloadStationTask
 import config as config
+from synology_api import downloadstation
 
 db = TinyDB(config.db_file)
 table = db.table('tv_table')
@@ -18,13 +17,7 @@ def load_tvs_id():
     with open(config.movie_id_file) as movieid_data_file:
         tvs = json.load(movieid_data_file)
 
-# Set up a connection
-conn = Connection('http', config.synology_addr, port=config.synology_port)
-# Authenticate and get an 'sid' cookie
-conn.authenticate(config.synology_user, config.synology_pwd)
-
-# Create an instance of the DownloadStationInfo API
-dstask_api = DownloadStationTask(conn, version=3)
+dwn = downloadstation.DownloadStation(config.synology_addr, config.synology_port, config.synology_user, config.synology_pwd, dsm_version=7)
 
 def get_data(tv,page):
     try:
@@ -65,8 +58,9 @@ def check_and_download(tv, doc):
                     magnet = item["magnet_url"]
                     if magnet is not None:
                         print('download '+tvname +' season:'+str(season)+' episode'+str(episode))
-                        resp = dstask_api.create(uri=magnet,destination=config.synology_dest+tvname)
-                        if resp.payload['success'] == True:
+                        resp = dwn.tasks_create(url=magnet,destination=config.synology_dest+tvname)
+                        # resp = dstask_api.create(uri=magnet,destination=config.synology_dest+tvname)
+                        if resp['success'] == True:
                             table.insert({'tvid':tvid,'tvname':tvname,'season':season,'episode':episode})
                         else:
                             print('download '+tvname +' season:'+str(season)+' episode'+str(episode)+' faile')
