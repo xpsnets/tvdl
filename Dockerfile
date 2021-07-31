@@ -1,8 +1,7 @@
 FROM python:3.6-alpine
 
 MAINTAINER xpsnets <xpsnets@outlook.com>
-
-ADD ./synopy /app/synopy
+RUN mkdir /app
 ADD ./main.py /app
 ADD ./movieid.json /app
 ADD ./requirements.txt /app
