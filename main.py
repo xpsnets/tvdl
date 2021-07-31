@@ -58,7 +58,8 @@ def check_and_download(tv, doc):
                     magnet = item["magnet_url"]
                     if magnet is not None:
                         print('download '+tvname +' season:'+str(season)+' episode'+str(episode))
-                        resp = dwn.tasks_create(url=magnet,destination=config.synology_dest+tvname)
+                        params = {'destination': config.synology_dest+tvname}
+                        resp = dwn.create_task(uri=magnet,additional_param=params)
                         # resp = dstask_api.create(uri=magnet,destination=config.synology_dest+tvname)
                         if resp['success'] == True:
                             table.insert({'tvid':tvid,'tvname':tvname,'season':season,'episode':episode})
