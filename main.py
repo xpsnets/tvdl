@@ -52,8 +52,6 @@ def check_and_download(tv, doc):
             if filename.upper().find(format) != -1:
                 season = int(item["season"])
                 episode = int(item["episode"])
-                if episode == 0:
-                    continue
                 TV_Query = Query()
                 tv_info = table.get((TV_Query.tvid == tvid) & (TV_Query.season == season) & (TV_Query.episode == episode))
                 if tv_info is None:
