@@ -67,7 +67,7 @@ def check_and_download(tv, doc):
                         if resp['success'] == True:
                             table.insert({'tvid':tvid,'tvname':tvname,'season':season,'episode':episode})
                         else:
-                            print('download '+tvname +' season:'+str(season)+' episode'+str(episode)+' faile')
+                            print('download '+tvname +' season:'+str(season)+' episode'+str(episode)+' faile, err:'+str(resp["error"]))
                     else:
                         print(tvname +' season:'+str(season)+' episode'+str(episode)+'has no magnet link, skip.')
                         table.insert({'tvid':tvid,'tvname':tvname,'season':season,'episode':episode,'status':'skip'})
