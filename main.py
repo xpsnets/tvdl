@@ -1,6 +1,7 @@
 import sys
 import os
 import urllib.request
+from urllib.parse import unquote
 from tinydb import TinyDB, Query
 import time
 import datetime as dt
@@ -57,6 +58,7 @@ def check_and_download(tv, doc):
                 if tv_info is None:
                     magnet = item["magnet_url"]
                     if magnet is not None:
+                        magnet = unquote(magnet)
                         print('download '+tvname +' season:'+str(season)+' episode'+str(episode))
                         params = dict()
                         params['destination'] = config.synology_dest+tvname
