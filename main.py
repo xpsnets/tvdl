@@ -8,8 +8,8 @@ import datetime as dt
 import json
 import re
 import qbittorrentapi
-# import config
-import config_test as config
+import config
+# import config_test as config
 
 db = TinyDB(config.db_file)
 table = db.table('tv_table')
