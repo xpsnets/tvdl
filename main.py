@@ -7,8 +7,9 @@ import time
 import datetime as dt
 import json
 import re
-import config as config
-from synology_api import downloadstation
+import qbittorrentapi
+# import config
+import config_test as config
 
 db = TinyDB(config.db_file)
 table = db.table('tv_table')
@@ -18,7 +19,16 @@ def load_tvs_id():
     with open(config.movie_id_file) as movieid_data_file:
         tvs = json.load(movieid_data_file)
 
-dwn = downloadstation.DownloadStation(config.synology_addr, config.synology_port, config.synology_user, config.synology_pwd, dsm_version=7)
+conn_info = dict(
+    host=config.server_addr,
+    port=config.server_port,
+    username=config.server_user,
+    password=config.server_pwd,
+)
+
+qbt_client = qbittorrentapi.Client(**conn_info)
+
+# dwn = downloadstation.DownloadStation(config.synology_addr, config.synology_port, config.synology_user, config.synology_pwd, dsm_version=7)
 
 def get_data(tv,page):
     try:
@@ -60,11 +70,10 @@ def check_and_download(tv, doc):
                     if magnet is not None:
                         magnet = unquote(magnet)
                         print('download '+tvname +' season:'+str(season)+' episode'+str(episode))
-                        params = dict()
-                        params['destination'] = config.synology_dest+tvname
-                        resp = dwn.create_task(uri=magnet,additional_param=params)
-                        # resp = dstask_api.create(uri=magnet,destination=config.synology_dest+tvname)
-                        if resp['success'] == True:
+                        # params = dict()
+                        # params['destination'] = config.synology_dest+tvname
+                        # resp = dwn.create_task(uri=magnet,additional_param=params)
+                        if qbt_client.torrents_add(urls=magnet,savepath=config.tv_dest+tvname) == "Ok.":
                             table.insert({'tvid':tvid,'tvname':tvname,'season':season,'episode':episode})
                         else:
                             print('download '+tvname +' season:'+str(season)+' episode'+str(episode)+' faile, err:'+str(resp["error"]))

@@ -2,4 +2,4 @@ config
 urllib3
 tinydb
 requests
-synology-api
+qbittorrent-api

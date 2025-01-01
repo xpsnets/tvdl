@@ -1,12 +1,12 @@
 import os
 
-synology_addr = os.environ['SYNOLOGY_ADDR']
-synology_port = os.environ['SYNOLOGY_PORT']
+server_addr = os.environ['SERVER_ADDR']
+server_port = os.environ['SERVER_PORT']
 
-synology_user = os.environ['SYNOLOGY_USERNAME']
-synology_pwd = os.environ['SYNOLOGY_PWD']
+server_user = os.environ['SERVER_USERNAME']
+server_pwd = os.environ['SERVER_PWD']
 
-synology_dest = os.environ['SYNOLOGY_DEST']
+tv_dest = os.environ['TV_DEST']
 
 db_file = "/data/tv_db.json"
 movie_id_file = "/data/movieid.json"
